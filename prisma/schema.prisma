@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct conn
+}
+
+// file: schema.prisma
+
+model Pengguna {
+  id_pengguna     String     @id @default(cuid())
+  nama_pengguna   String
+  kata_sandi      String
+  peran           Peran      // enum: Karyawan, Manajer
+  penjualans      Penjualan[]
+}
+
+model Barang {
+  id_barang       String         @id @default(cuid())
+  nama_barang     String
+  harga           Float
+  stok            Int
+  satuan          String
+  jenis           Jenis          @default(Plastik)
+  detail_penjualans DetailPenjualan[]
+}
+
+
+model Penjualan {
+  id_penjualan    String          @id @default(cuid())
+  tanggal         DateTime        @default(now())
+  total_harga     Float
+  metode_pembayaran MetodePembayaran
+  id_pengguna     String
+  pengguna        Pengguna        @relation(fields: [id_pengguna], references: [id_pengguna])
+  detail_penjualans DetailPenjualan[]
+}
+
+model DetailPenjualan {
+  id_detail       String          @id @default(cuid())
+  harga           Float
+  kuantitas       Int
+  id_barang       String
+  id_penjualan    String
+  barang          Barang          @relation(fields: [id_barang], references: [id_barang])
+  penjualan       Penjualan       @relation(fields: [id_penjualan], references: [id_penjualan])
+}
+
+enum Peran {
+  Karyawan
+  Manajer
+}
+
+enum Jenis {
+  Plastik
+  Bahan_Kue
+  Sembako
+}
+
+enum MetodePembayaran {
+  QRIS
+  Tunai
+}
